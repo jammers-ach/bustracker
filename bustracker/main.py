@@ -6,12 +6,11 @@ import time
 from bustracker.departures import Stop
 from bustracker.display import BusTrackerDisplay
 
-def main(scr):
+def main(scr, SLEEP_TIME=30):
 
     bus_stops = Stop('E1060'), Stop('E1059'), Stop('E1058'), Stop('E1057'), Stop('E1116', services=['550',])
 
     btd = BusTrackerDisplay(scr, bus_stops)
-    btd.debug = True
 
     locale.setlocale(locale.LC_ALL, '')
     code = locale.getpreferredencoding()
@@ -35,7 +34,7 @@ def main(scr):
 
 
     while scr.getch() == -1:
-        time.sleep(2)
+        time.sleep(SLEEP_TIME)
         btd.draw_all_stops()
         scr.refresh()
 
