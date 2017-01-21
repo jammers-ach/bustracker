@@ -1,2 +1,17 @@
 # bustracker
-an Ncurses app that will run of a raspberry pi. Shows the next departures from some predifined bustops (in Helsinki/Espoo)
+Raspberry pi display for HSL bus stops and routes
+
+
+uses the Reitiopass API.
+
+Get credentials from here:
+
+http://developer.reittiopas.fi/pages/en/home.php
+and then put:
+
+```
+USER='username'
+PASS='password'
+```
+
+in bustracker/auth.py
