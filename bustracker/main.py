@@ -1,15 +1,16 @@
 import curses
 import locale
 import arrow
+
 from bustracker.departures import Stop
 
-def main(critical_minutes=10, warning_minutes=15):
+def main(scr, critical_minutes=10, warning_minutes=15):
+
     bus_stops = Stop('E1060'), Stop('E1059'), Stop('E1058'), Stop('E1057'), Stop('E1116', services=['550',])
 
     locale.setlocale(locale.LC_ALL, '')
     code = locale.getpreferredencoding()
 
-    scr = curses.initscr()
     curses.start_color()
     curses.use_default_colors()
     scr.keypad(True)
@@ -23,6 +24,7 @@ def main(critical_minutes=10, warning_minutes=15):
     last_updated = arrow.get().to("Europe/Helsinki")
 
     scr.addstr("Last updated {}\n\n".format(last_updated.format("HH:mm") ))
+    scr.refresh()
 
     for stop in bus_stops:
         scr.addstr(stop.name, curses.A_BOLD)
@@ -53,6 +55,8 @@ def main(critical_minutes=10, warning_minutes=15):
             scr.addstr(dep.departure.humanize(), curses.color_pair(color))
             scr.addstr('\n')
 
+        scr.refresh()
+
     scr.refresh()
     scr.getch()
 
@@ -60,4 +64,4 @@ def main(critical_minutes=10, warning_minutes=15):
 
 
 if __name__ == '__main__':
-    main()
+    curses.wrapper(main)

@@ -86,13 +86,17 @@ class Stop:
         self.time_limit = time_limit
         self.services = services
         self.stop_type = stop_type
-        self._update()
+        self.last_data = None
 
     def _update(self):
         self.last_data = Stop._get_next_departures(self.stop_code)[0]
 
     @property
     def latest_departures(self):
+
+        if not self.last_data:
+            self._update()
+
         departures = [Departure.from_json(d) for d in self.last_data['departures']]
         if not self.services:
             return departures
@@ -101,6 +105,9 @@ class Stop:
 
     @property
     def name(self):
+        if not self.last_data:
+            self._update()
+
         return self.last_data['name_fi']
 
     @staticmethod
