@@ -75,18 +75,22 @@ class Departure:
 
 
 class Stop:
-    def __init__(self, stop_code, time_limit=60, services=None, stop_type="Train"):
+    # default time limit of 62 as we want to see departures in exactly 1 hour
+    def __init__(self, stop_code, time_limit=62, services=None, stop_type="Train", max_display=None):
         """
         :param str stop_code:
         :param int time_limit: when we get departures get them for this many minutes
         :param None|array services: None, show all stops, else only show trains with these codse
              e.g. None shows all, ['A','L'] shows only trains A and L
+        :parap str stop_tpe: Bus/ Train/Tram etc
+        :param None|int max_display: how many departures to keep at one time
         """
         self.stop_code = stop_code
         self.time_limit = time_limit
         self.services = services
         self.stop_type = stop_type
         self.last_data = None
+        self.max_display = None
 
     def _update(self):
         self.last_data = Stop._get_next_departures(self.stop_code)[0]
@@ -98,10 +102,13 @@ class Stop:
             self._update()
 
         departures = [Departure.from_json(d) for d in self.last_data['departures']]
-        if not self.services:
-            return departures
+        if self.services:
+            departures = [d for d in departures if d.train in self.services]
+
+        if self.max_display:
+            return departures[0:self.max_display]
         else:
-            return [d for d in departures if d.train in self.services]
+            return departures
 
     @property
     def name(self):
