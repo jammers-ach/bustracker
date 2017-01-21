@@ -1,6 +1,9 @@
 import arrow
 from bustracker.departures import Departure, Stop
 
+def make_departure_from_arrow(time):
+    return {'date': time.format("YYYYMMDD"), 'time': int(time.format("HHmm")), 'code': '3002L 2'}
+
 def test_departure_parsing():
     d = Departure.from_json({'code': '3002A 2', 'date': 20170117, 'time': 2219})
 
@@ -28,7 +31,7 @@ def test_departure_parsing_early_morning():
 
 def test_stop_update():
     s = Stop("E1060")
-    # update is called by __init__
+    s.update()
     assert s.last_data is not None
 
 
@@ -45,3 +48,16 @@ def test_minutes_left():
 
 
     assert d.minutes_left() < 0
+
+
+def test_remove_departure():
+    stop = Stop("E1060")
+    time_past = arrow.get().replace(minutes=-1)
+    time_future = arrow.get().replace(minutes=+1)
+    fake_data = {'departures': [make_departure_from_arrow(time_past), make_departure_from_arrow(time_future)]}
+
+    stop.last_data = fake_data
+
+    assert len(stop.latest_departures) == 2
+    stop._remove_expired_departures()
+    assert len(stop.latest_departures) == 1

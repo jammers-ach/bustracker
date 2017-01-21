@@ -23,9 +23,19 @@ class BusTrackerDisplay:
         time_left = [d[0].minutes_left() for d in departures if d and d[0].minutes_left() > 0]
         return min(time_left) * 60
 
-    def update_all_stops(self):
+    def update_stops(self):
         for stop in self.stops:
-            stop._update()
+            departures = stop.latest_departures
+            valid_minutes_left = [d.minutes_left()*60 for d in departures]
+
+            if valid_minutes_left and min(valid_minutes_left) < 1:
+                if self.debug:
+                    self.scr.addstr("\n{} in {} - UPDATEING".format(stop.name, min(valid_minutes_left)))
+                    self.scr.refresh()
+                stop.update()
+            elif valid_minutes_left and self.debug:
+                self.scr.addstr("\n{} in {}".format(stop.name, min(valid_minutes_left)))
+                self.scr.refresh()
 
 
     def draw_all_stops(self):
@@ -38,20 +48,7 @@ class BusTrackerDisplay:
             self.draw_stop(stop)
             self.scr.refresh()
 
-        self.do_update()
-
-    def do_update(self):
-        if self.next_update_duration <= 1:
-            if self.debug:
-                self.scr.addstr("\nUpdating departure times....")
-                self.scr.refresh()
-
-            self.update_all_stops()
-
-        elif self.debug:
-            self.scr.addstr("\nUpdating in {} seconds".format(self.next_update_duration))
-            self.scr.refresh()
-
+        self.update_stops()
 
     def draw_stop(self, stop):
         self.scr.addstr(stop.name, curses.A_BOLD)

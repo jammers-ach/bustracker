@@ -92,8 +92,18 @@ class Stop:
         self.last_data = None
         self.max_display = None
 
+    def update(self):
+        self._update()
+        self._remove_expired_departures()
+
     def _update(self):
         self.last_data = Stop._get_next_departures(self.stop_code)[0]
+
+    def _remove_expired_departures(self):
+        for d in self.last_data['departures']:
+            dep = Departure.from_json(d)
+            if dep.minutes_left() < 0:
+                self.last_data['departures'].remove(d)
 
     @property
     def latest_departures(self):
