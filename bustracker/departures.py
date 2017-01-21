@@ -6,6 +6,7 @@ from math import floor
 
 url = 'http://api.reittiopas.fi/hsl/prod/'
 
+
 class Departure:
     line_data = {}
 
@@ -19,6 +20,11 @@ class Departure:
         self.destination = destination
         self.departure = departure
 
+    def minutes_left(self, time=None):
+        if not time:
+            time == arrow.get()
+        minutes_left = (self.departure - time).total_seconds() / 60
+        return minutes_left
 
     @classmethod
     def from_json(cls, json_data, timezone="Europe/Helsinki"):

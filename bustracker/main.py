@@ -39,7 +39,7 @@ def main(critical_minutes=10, warning_minutes=15):
 
             scr.addstr(' ' * (26 - len(dep.destination)))
 
-            minutes_left = (dep.departure - arrow.get()).total_seconds() / 60
+            minutes_left = dep.minutes_left()
 
             if minutes_left < critical_minutes:
                 color = 1  # RED
