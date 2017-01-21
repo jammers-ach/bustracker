@@ -4,7 +4,7 @@ import arrow
 from bustracker.departures import Stop
 
 def main(critical_minutes=10, warning_minutes=15):
-    bus_stops = Stop('E1060'), Stop('E1059'), Stop('E1058'), Stop('E1057'), Stop('E1116')
+    bus_stops = Stop('E1060'), Stop('E1059'), Stop('E1058'), Stop('E1057'), Stop('E1116', services=['550',])
 
     locale.setlocale(locale.LC_ALL, '')
     code = locale.getpreferredencoding()

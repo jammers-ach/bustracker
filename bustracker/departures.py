@@ -21,8 +21,8 @@ class Departure:
         self.departure = departure
 
     def minutes_left(self, time=None):
-        if not time:
-            time == arrow.get()
+        if time == None:
+            time = arrow.get()
         minutes_left = (self.departure - time).total_seconds() / 60
         return minutes_left
 
@@ -75,13 +75,16 @@ class Departure:
 
 
 class Stop:
-    def __init__(self, stop_code, time_limit=60, filter_codes=[], stop_type="Train"):
+    def __init__(self, stop_code, time_limit=60, services=None, stop_type="Train"):
         """
         :param str stop_code:
+        :param int time_limit: when we get departures get them for this many minutes
+        :param None|array services: None, show all stops, else only show trains with these codse
+             e.g. None shows all, ['A','L'] shows only trains A and L
         """
         self.stop_code = stop_code
         self.time_limit = time_limit
-        self.filter_codes = filter_codes
+        self.services = services
         self.stop_type = stop_type
         self._update()
 
@@ -90,7 +93,11 @@ class Stop:
 
     @property
     def latest_departures(self):
-        return [Departure.from_json(d) for d in self.last_data['departures']]
+        departures = [Departure.from_json(d) for d in self.last_data['departures']]
+        if not self.services:
+            return departures
+        else:
+            return [d for d in departures if d.train in self.services]
 
     @property
     def name(self):
