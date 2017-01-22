@@ -6,7 +6,7 @@ import time
 from bustracker.departures import Stop
 from bustracker.display import BusTrackerDisplay
 
-def main(scr, SLEEP_TIME=30):
+def main(scr, SLEEP_TIME=10):
 
     bus_stops = Stop('E1060'), Stop('E1059'), Stop('E1058'), Stop('E1057'), Stop('E1116', services=['550',])
 
@@ -26,20 +26,18 @@ def main(scr, SLEEP_TIME=30):
     curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
     curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
 
-
-    scr.addstr("Next update in {}".format(btd.next_update_duration))
-
     btd.draw_all_stops()
     scr.refresh()
 
-
-    while scr.getch() == -1:
+    char = -1
+    while char != 27:
         time.sleep(SLEEP_TIME)
         btd.draw_all_stops()
         scr.refresh()
-
+        char = scr.getch()
 
     curses.endwin()
+
 
 
 if __name__ == '__main__':
