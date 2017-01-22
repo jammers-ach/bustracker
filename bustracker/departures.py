@@ -90,7 +90,7 @@ class Stop:
         self.services = services
         self.stop_type = stop_type
         self.last_data = None
-        self.max_display = None
+        self.max_display = max_display
 
     def update(self):
         self._update()

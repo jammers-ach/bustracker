@@ -8,7 +8,7 @@ from bustracker.display import BusTrackerDisplay
 
 def main(scr, SLEEP_TIME=10):
 
-    bus_stops = Stop('E1060'), Stop('E1059'), Stop('E1058'), Stop('E1057'), Stop('E1116', services=['550',])
+    bus_stops = Stop('E1060'), Stop('E1059'), Stop('E1058'), Stop('E1057'), Stop('E1116', services=['550',], max_display=4)
 
     btd = BusTrackerDisplay(scr, bus_stops)
 
