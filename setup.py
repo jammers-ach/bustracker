@@ -9,4 +9,9 @@ setup(name='vswap',
       url='https://github.com/jammers-ach/bustracker',
       packages=['bustracker',],
       install_requires=['pytest', 'requests', 'arrow'],
-     )
+      entry_points={
+          'console_scripts': [
+              'bustracker = bustracker.main:launch_bt'
+          ]
+      },
+      )

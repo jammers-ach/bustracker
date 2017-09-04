@@ -6,6 +6,9 @@ import time
 from bustracker.departures import Stop
 from bustracker.display import BusTrackerDisplay
 
+def launch_bt():
+    curses.wrapper(main)
+
 def main(scr, SLEEP_TIME=10):
 
     bus_stops = Stop('E1060'), Stop('E1059'), Stop('E1058'), Stop('E1057'), Stop('E1116', services=['550',], max_display=4)
@@ -41,4 +44,4 @@ def main(scr, SLEEP_TIME=10):
 
 
 if __name__ == '__main__':
-    curses.wrapper(main)
+    launch_bt()
