@@ -44,3 +44,15 @@ or
 
 check it works
 `bustracker`
+
+## Getting it to startup on login
+
+After checking the bustracker works
+
+'vi /etc/systemd/system/getty@tty1.service.d/override.conf'
+
+'[Service]
+ExecStart=
+ExecStart=-/root/bustracker/start.sh
+StandardInput=tty
+StandardOutput=tty'
