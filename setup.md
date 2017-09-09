@@ -23,9 +23,21 @@ For the wifi chip I have, some combination of:
 
 ## Screen
 
-My screen came from
+My screen came from ebay, it's a waveshare clone
 
 `cat LCD35-show | sed 's/sudo //' | sh`
+
+### Stopping console login
+`apt-get install kbd`
+edit `/etc/kbd/config`
+set 
+```
+BLANK_TIME=0 
+ POWERDOWN_TIME=0
+```
+
+also add `consoleblank=0` to `/boot/cmdline.txt`
+
 
 ## Bustracker
 
