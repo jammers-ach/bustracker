@@ -8,7 +8,7 @@ setup(name='vswap',
       author_email='jammers@gmail.com',
       url='https://github.com/jammers-ach/bustracker',
       packages=['bustracker',],
-      install_requires=['pytest', 'requests', 'arrow'],
+      install_requires=['pytest', 'requests', 'arrow', 'pyyaml'],
       entry_points={
           'console_scripts': [
               'bustracker = bustracker.main:launch_bt'

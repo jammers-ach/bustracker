@@ -1,0 +1,9 @@
+username: USER
+password: PASS
+stops:
+    - code: E1060
+      max_display: 4
+      time_limit: 60
+      stop_type: "Train"
+    - code: E1020
+

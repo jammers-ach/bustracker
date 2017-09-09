@@ -16,7 +16,6 @@ class BusTrackerDisplay:
         self.stops = stops
         self.debug = False
 
-
     @property
     def next_update_duration(self):
         departures = [s.latest_departures for s in self.stops]
