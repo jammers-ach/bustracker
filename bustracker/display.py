@@ -43,7 +43,7 @@ class BusTrackerDisplay:
 
 
         self.last_updated = arrow.get()
-        self.scr.addstr("Last updated {}\n\n".format(self.last_updated.to("Europe/Helsinki").format("HH:mm")))
+        self.scr.addstr("Last updated {}, {} {} \n\n".format(self.last_updated.to("Europe/Helsinki").format("HH:mm"), self.x, self.destination_width))
         self.scr.refresh()
 
         for stop in self.stops:
@@ -68,7 +68,10 @@ class BusTrackerDisplay:
             if minutes_left < 0:
                 continue
 
-            text = "{:>8}{:>13}".format(dep.train, dep.destination)
+            width = self.destination_width
+
+            text = "{:>8}    {:<" + "{}".format(width) + "}"
+            text = text.format(dep.train, dep.destination)
             self.scr.addstr(text)
 
             if minutes_left < self.critical_minutes:
@@ -78,10 +81,7 @@ class BusTrackerDisplay:
             else:
                 color = 0  # green
 
-            text = "{:>"+"{}".format(self.destination_width)+"}"
-            text = text.format(dep.departure.format('HH:mm'))
-
-            self.scr.addstr(text)
+            self.scr.addstr(dep.departure.format('HH:mm'))
 
             text = " {}".format(dep.departure.humanize())
             self.scr.addstr(text, curses.color_pair(color))
@@ -89,7 +89,7 @@ class BusTrackerDisplay:
 
     @property
     def destination_width(self):
-        width = self.x - 8 - 13 - 11 - 5
+        width = self.x - 8 - 4 - 5 - 14
 
         return min(width, self.max_destination_gap)
 
