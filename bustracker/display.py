@@ -43,7 +43,7 @@ class BusTrackerDisplay:
 
 
         self.last_updated = arrow.get()
-        self.scr.addstr("Last updated {}, {} {} \n\n".format(self.last_updated.to("Europe/Helsinki").format("HH:mm"), self.x, self.destination_width))
+        self.scr.addstr("Last updated {}\n\n".format(self.last_updated.to("Europe/Helsinki").format("HH:mm")))
         self.scr.refresh()
 
         for stop in self.stops:
