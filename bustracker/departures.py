@@ -1,6 +1,5 @@
 import requests
 import arrow
-from bustracker.auth import USER, PASS
 
 from math import floor
 
@@ -27,13 +26,13 @@ class Departure:
         return minutes_left
 
     @classmethod
-    def from_json(cls, json_data, timezone="Europe/Helsinki"):
+    def from_json(cls, json_data, user, password, timezone="Europe/Helsinki"):
         '''
         Turns a departure (e.g. {'code': '3002A 2', 'date': 20170117, 'time': 2219})
         into something that can be parsed by a human
         '''
 
-        line_info = cls._line_info(json_data['code'])
+        line_info = cls._line_info(json_data['code'], user, password)
 
         train_code = line_info['code_short']
         destination = line_info['line_end']
@@ -55,13 +54,13 @@ class Departure:
 
 
     @classmethod
-    def _line_info(cls, line_code):
+    def _line_info(cls, line_code, user, password):
         if line_code not in cls.line_data:
             data = {
                 'query':line_code,
                 'request':'lines',
-                'user':USER,
-                'pass':PASS,
+                'user':user,
+                'pass':password,
             }
             resp = requests.get(url, params=data)
             resp.raise_for_status()
@@ -76,9 +75,11 @@ class Departure:
 
 class Stop:
     # default time limit of 62 as we want to see departures in exactly 1 hour
-    def __init__(self, stop_code, time_limit=62, services=None, stop_type="Train", max_display=None):
+    def __init__(self, stop_code, user, password, time_limit=62, services=None, stop_type="Train", max_display=None):
         """
         :param str stop_code:
+        :param str user: username for reittiopas api
+        :param str password: password for reittiopas api
         :param int time_limit: when we get departures get them for this many minutes
         :param None|array services: None, show all stops, else only show trains with these codse
              e.g. None shows all, ['A','L'] shows only trains A and L
@@ -91,17 +92,19 @@ class Stop:
         self.stop_type = stop_type
         self.last_data = None
         self.max_display = max_display
+        self.user = user
+        self.password = password
 
     def update(self):
         self._update()
         self._remove_expired_departures()
 
     def _update(self):
-        self.last_data = Stop._get_next_departures(self.stop_code)[0]
+        self.last_data = Stop._get_next_departures(self.stop_code, self.user, self.password)[0]
 
     def _remove_expired_departures(self):
         for d in self.last_data['departures']:
-            dep = Departure.from_json(d)
+            dep = Departure.from_json(d, self.user, self.password)
             if dep.minutes_left() < 0:
                 self.last_data['departures'].remove(d)
 
@@ -111,7 +114,7 @@ class Stop:
         if not self.last_data:
             self._update()
 
-        departures = [Departure.from_json(d) for d in self.last_data['departures']]
+        departures = [Departure.from_json(d, self.user, self.password) for d in self.last_data['departures']]
         if self.services:
             departures = [d for d in departures if d.train in self.services]
 
@@ -128,7 +131,7 @@ class Stop:
         return self.last_data['name_fi']
 
     @staticmethod
-    def _get_next_departures(stop_id, data_ovr={}):
+    def _get_next_departures(stop_id, user, password, data_ovr={}):
         """Gets the next: set of departures for a set of stops
         see http://developer.reittiopas.fi/pages/en/http-get-interface/1.2.1.php
 
@@ -136,8 +139,8 @@ class Stop:
         :param dict data_ovr: override for the get paramsif anything needs to be added to request
         :returns: requests.Response"""
         data = {
-            'user':USER,
-            'pass':PASS,
+            'user':user,
+            'pass':password,
             'code':stop_id,
             'request':'stop',
             'time_limit':60,

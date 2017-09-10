@@ -1,19 +1,33 @@
 import curses
+import argparse
 import locale
 import arrow
 import time
 
+from os import path
+
 from bustracker.departures import Stop
 from bustracker.display import BusTrackerDisplay
+from bustracker.config import load_config
 
 def launch_bt():
-    curses.wrapper(main)
+    parser = argparse.ArgumentParser(description='Display departures for Helsinki area buses/trams/trains/metro')
+    parser.add_argument('--config', dest='config',
+                        default='~/.bustracker.yaml',
+                        help='path to configuration file',
+                        )
 
-def main(scr, SLEEP_TIME=10):
+    args = parser.parse_args()
+    curses.wrapper(main, args.config)
 
-    bus_stops = Stop('E1060'), Stop('E1059'), Stop('E1058'), Stop('E1057'), Stop('E1116', services=['550',], max_display=4)
+def main(scr, config_path, SLEEP_TIME=10):
 
-    btd = BusTrackerDisplay(scr, bus_stops)
+    config_path = path.expanduser(config_path)
+    if not path.exists(config_path):
+        raise Exception("Config file not found: {}".format(config_path))
+    stops = load_config(config_path)
+
+    btd = BusTrackerDisplay(scr, stops)
 
     locale.setlocale(locale.LC_ALL, '')
     code = locale.getpreferredencoding()

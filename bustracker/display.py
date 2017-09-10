@@ -4,9 +4,9 @@ import curses
 
 
 class BusTrackerDisplay:
-    destination_width = 26
     critical_minutes=10
     warning_minutes=15
+    max_destination_gap=26
 
     def __init__(self, scr, stops):
         '''
@@ -15,7 +15,6 @@ class BusTrackerDisplay:
         self.scr = scr
         self.stops = stops
         self.debug = False
-
 
     @property
     def next_update_duration(self):
@@ -40,12 +39,19 @@ class BusTrackerDisplay:
 
     def draw_all_stops(self):
         self.scr.clear()
+        self.y, self.x = self.scr.getmaxyx()
+
+
         self.last_updated = arrow.get()
         self.scr.addstr("Last updated {}\n\n".format(self.last_updated.to("Europe/Helsinki").format("HH:mm")))
         self.scr.refresh()
 
         for stop in self.stops:
-            self.draw_stop(stop)
+
+            try:
+                self.draw_stop(stop)
+            except curses.error:
+                break
             self.scr.refresh()
 
         self.update_stops()
@@ -62,13 +68,8 @@ class BusTrackerDisplay:
             if minutes_left < 0:
                 continue
 
-            self.scr.addstr('\t')
-            self.scr.addstr(dep.train)
-            self.scr.addstr('\t')
-            self.scr.addstr(dep.destination)
-
-            self.scr.addstr(' ' * (self.destination_width - len(dep.destination)))
-
+            text = "{:>8}{:>13}".format(dep.train, dep.destination)
+            self.scr.addstr(text)
 
             if minutes_left < self.critical_minutes:
                 color = 1  # RED
@@ -77,8 +78,18 @@ class BusTrackerDisplay:
             else:
                 color = 0  # green
 
-            self.scr.addstr(dep.departure.format('HH:mm'))
-            self.scr.addstr('\t')
-            self.scr.addstr(dep.departure.humanize(), curses.color_pair(color))
+            text = "{:>"+"{}".format(self.destination_width)+"}"
+            text = text.format(dep.departure.format('HH:mm'))
+
+            self.scr.addstr(text)
+
+            text = " {}".format(dep.departure.humanize())
+            self.scr.addstr(text, curses.color_pair(color))
             self.scr.addstr('\n')
+
+    @property
+    def destination_width(self):
+        width = self.x - 8 - 13 - 11 - 5
+
+        return min(width, self.max_destination_gap)
 
