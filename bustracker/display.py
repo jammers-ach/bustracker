@@ -68,7 +68,7 @@ class BusTrackerDisplay:
             if minutes_left < 0:
                 continue
 
-            text = "{:>8}{:>11}".format(dep.train, dep.destination)
+            text = "{:>8}{:>13}".format(dep.train, dep.destination)
             self.scr.addstr(text)
 
             if minutes_left < self.critical_minutes:
@@ -89,7 +89,7 @@ class BusTrackerDisplay:
 
     @property
     def destination_width(self):
-        width = self.x - 8 - 11 - 11 - 5
+        width = self.x - 8 - 13 - 11 - 5
 
         return min(width, self.max_destination_gap)
 
