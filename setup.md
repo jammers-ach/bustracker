@@ -85,10 +85,12 @@ bustracker
 
 After checking the bustracker works
 
-'vi /etc/systemd/system/getty@tty1.service.d/override.conf'
+edit  `/etc/systemd/system/getty@tty1.service.d/override.conf`
 
-'[Service]
+```
+[Service]
 ExecStart=
 ExecStart=-/root/bustracker/start.sh
 StandardInput=tty
-StandardOutput=tty'
+StandardOutput=tty
+```

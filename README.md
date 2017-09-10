@@ -2,7 +2,7 @@
 Ncurses application to display the next departures for the HSL area trains/trams/buses/metro
 
 ```
-21:25
+Last Updated 21:25
 
 Leppävaaran asema, Laituri 4
         A       Helsinki                  21:26 in seconds
