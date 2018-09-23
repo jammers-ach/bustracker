@@ -25,14 +25,11 @@ bustracker
 
 ## Configuration
 
-Get credentials from here: http://developer.reittiopas.fi/pages/en/home.php
 
 Then create a config file: `~/.bustracker.yaml` is the default, unless `--config` is specified
 
 Example config file:
 ```yaml
-username: from reittiopas credentials
-password: from reittiopas credentials
 stops:
     - code: E1060
       max_display: 4        # Optional, limit the maximum displayed departures to this amount

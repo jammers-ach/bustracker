@@ -20,8 +20,6 @@ def load_config(filename):
         assert 'code' in stop, 'Missing code for one stop'
         stops.append(Stop(
             stop['code'],
-            config['username'],
-            config['password'],
             stop.get('time_limit', 62),
             stop.get('services', None),
             stop.get('stop_type', "Train"),

@@ -3,11 +3,9 @@ import arrow
 
 from math import floor
 
-url = 'http://api.reittiopas.fi/hsl/prod/'
-
+url = 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql'
 
 class Departure:
-    line_data = {}
 
     def __init__(self, train, destination, departure):
         '''
@@ -26,85 +24,50 @@ class Departure:
         return minutes_left
 
     @classmethod
-    def from_json(cls, json_data, user, password, timezone="Europe/Helsinki"):
+    def from_json(cls, json_data, timezone="Europe/Helsinki"):
         '''
         Turns a departure (e.g. {'code': '3002A 2', 'date': 20170117, 'time': 2219})
         into something that can be parsed by a human
         '''
 
-        line_info = cls._line_info(json_data['code'], user, password)
-
-        train_code = line_info['code_short']
-        destination = line_info['line_end']
-
-        departure_date= arrow.get(str(json_data['date']),'YYYYMMDD')
-        departure_time = json_data['time']
-
-        if departure_time > 2359:
-            departure_time -= 2400
-            departure_date = departure_date.replace(days=1)
-
-        hours = floor(departure_time / 100)
-        minutes = departure_time - (hours * 100)
-
-        departure = departure_date.replace(hour=hours, minute=minutes)
-        departure = departure.replace(tzinfo=timezone)
+        train_code = json_data['code_short']
+        destination = json_data['destination']
+        departure = json_data['date']
 
         return cls(train_code, destination, departure)
-
-
-    @classmethod
-    def _line_info(cls, line_code, user, password):
-        if line_code not in cls.line_data:
-            data = {
-                'query':line_code,
-                'request':'lines',
-                'user':user,
-                'pass':password,
-            }
-            resp = requests.get(url, params=data)
-            resp.raise_for_status()
-            data = resp.json()
-            for i in data:
-                cls.line_data[i['code']] = i
-
-        return cls.line_data[line_code]
-
 
 
 
 class Stop:
     # default time limit of 62 as we want to see departures in exactly 1 hour
-    def __init__(self, stop_code, user, password, time_limit=62, services=None, stop_type="Train", max_display=None):
+    def __init__(self, stop_code, time_limit=62, services=None, stop_type="Train", max_display=None):
         """
         :param str stop_code:
-        :param str user: username for reittiopas api
-        :param str password: password for reittiopas api
         :param int time_limit: when we get departures get them for this many minutes
         :param None|array services: None, show all stops, else only show trains with these codse
              e.g. None shows all, ['A','L'] shows only trains A and L
         :parap str stop_tpe: Bus/ Train/Tram etc
         :param None|int max_display: how many departures to keep at one time
         """
+        self.stop_id = None
         self.stop_code = stop_code
         self.time_limit = time_limit
         self.services = services
         self.stop_type = stop_type
         self.last_data = None
         self.max_display = max_display
-        self.user = user
-        self.password = password
+        self.stop_name = None
 
     def update(self):
         self._update()
         self._remove_expired_departures()
 
     def _update(self):
-        self.last_data = Stop._get_next_departures(self.stop_code, self.user, self.password)[0]
+        self.last_data = self.get_next_departures()
 
     def _remove_expired_departures(self):
         for d in self.last_data['departures']:
-            dep = Departure.from_json(d, self.user, self.password)
+            dep = Departure.from_json(d)
             if dep.minutes_left() < 0:
                 self.last_data['departures'].remove(d)
 
@@ -114,7 +77,7 @@ class Stop:
         if not self.last_data:
             self._update()
 
-        departures = [Departure.from_json(d, self.user, self.password) for d in self.last_data['departures']]
+        departures = [Departure.from_json(d) for d in self.last_data['departures']]
         if self.services:
             departures = [d for d in departures if d.train in self.services]
 
@@ -125,29 +88,95 @@ class Stop:
 
     @property
     def name(self):
-        if not self.last_data:
+        if not self.stop_name:
             self._update()
 
-        return self.last_data['name_fi']
+        return self.stop_name
 
-    @staticmethod
-    def _get_next_departures(stop_id, user, password, data_ovr={}):
+    def get_next_departures(self, data_ovr={}):
         """Gets the next: set of departures for a set of stops
-        see http://developer.reittiopas.fi/pages/en/http-get-interface/1.2.1.php
+        see https://digitransit.fi/en/developers/apis/1-routing-api/stops/
 
         :param str stop_id: text of the stop e.g. E1060
         :param dict data_ovr: override for the get paramsif anything needs to be added to request
         :returns: requests.Response"""
-        data = {
-            'user':user,
-            'pass':password,
-            'code':stop_id,
-            'request':'stop',
-            'time_limit':60,
-            'request':'stop'
-        }
-        data.update(data_ovr)
 
-        resp = requests.get(url, params=data)
+        # Get the stop id
+        if not self.stop_id:
+            query = '''{{
+    stops(name: "{}") {{
+        gtfsId
+        name
+    }}
+    }}'''.format(self.stop_code)
+            headers = {'content-type': 'application/graphql'}
+            resp = requests.post(url, data=query, headers=headers)
+            resp.raise_for_status()
+            stop_info = resp.json()['data']
+            assert len(stop_info["stops"]) ==1, "Too many stops in response for {}".format(self.stop_code)
+            self.stop_id = stop_info["stops"][0]["gtfsId"]
+            self.stop_name = stop_info["stops"][0]["name"]
+
+        # now get the departure info
+        query = '''
+        {{
+  stop(id: "{}") {{
+      stoptimesWithoutPatterns(numberOfDepartures: 3 omitNonPickups: true) {{
+      stop {{
+        platformCode
+        name
+      }}
+      serviceDay
+      scheduledArrival
+      scheduledDeparture
+      trip {{
+        route {{
+          shortName
+        }}
+        tripHeadsign
+        directionId
+      }}
+    }}
+  }}
+}}
+        '''.format(self.stop_id)
+
+        headers = {'content-type': 'application/graphql'}
+        resp = requests.post(url, data=query, headers=headers)
         resp.raise_for_status()
-        return resp.json()
+        departures = resp.json()['data']
+
+        return Stop.parse_new_data(departures)
+
+    @classmethod
+    def parse_new_data(cls, departures):
+        '''
+        Parses a new format of departure info, into something
+        resembling the old format
+        '''
+        data = []
+        for s in departures['stop']['stoptimesWithoutPatterns']:
+            data.append({
+                'code_short': s['trip']['route']['shortName'],
+                'destination': s['trip']['tripHeadsign'],
+                'date': cls._from_date(s['serviceDay'], s['scheduledDeparture']),
+            })
+
+        return {
+            'departures': data
+        }
+
+    @classmethod
+    def _from_date(cls, day, time):
+        '''
+        returns an arrow from a date and time from the format
+        of the reitiopass api
+        "Scheduled arrival time. Format: seconds since midnight of the departure date"
+        "Departure date of the trip. Format: Unix timestamp (local time) in seconds."
+        '''
+        timestamp = day + time
+        return arrow.Arrow.fromtimestamp(timestamp)
+
+if __name__ == '__main__':
+    s = Stop("E1060")
+    print(s)
