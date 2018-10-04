@@ -81,7 +81,7 @@ class BusTrackerDisplay:
             else:
                 color = 0  # green
 
-            self.scr.addstr(dep.departure.format('HH:mm'))
+            self.scr.addstr(dep.departure.to("Europe/Helsinki").format('HH:mm'))
 
             text = " {}".format(dep.departure.humanize())
             self.scr.addstr(text, curses.color_pair(color))

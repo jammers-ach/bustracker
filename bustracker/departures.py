@@ -176,7 +176,6 @@ class Stop:
         '''
         timestamp = day + time
         date = arrow.Arrow.fromtimestamp(timestamp)
-        date = date.replace(tzinfo=timezone)
         return date
 
 if __name__ == '__main__':
