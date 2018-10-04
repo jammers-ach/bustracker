@@ -167,7 +167,7 @@ class Stop:
         }
 
     @classmethod
-    def _from_date(cls, day, time):
+    def _from_date(cls, day, time, timezone="Europe/Helsinki"):
         '''
         returns an arrow from a date and time from the format
         of the reitiopass api
@@ -175,7 +175,9 @@ class Stop:
         "Departure date of the trip. Format: Unix timestamp (local time) in seconds."
         '''
         timestamp = day + time
-        return arrow.Arrow.fromtimestamp(timestamp)
+        date = arrow.Arrow.fromtimestamp(timestamp)
+        date = date.replace(tzinfo=timezone)
+        return date
 
 if __name__ == '__main__':
     s = Stop("E1060")

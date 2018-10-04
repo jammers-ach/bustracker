@@ -11,8 +11,6 @@ def load_config(filename):
     with open(filename) as f:
         config = yaml.load(f)
 
-    assert 'username' in config, "Missing retiopas username"
-    assert 'password' in config, "Missing retiopass password"
     assert 'stops' in config, "No stops in config"
 
     stops = []
