@@ -9,6 +9,7 @@ from os import path
 from bustracker.departures import Stop
 from bustracker.display import BusTrackerDisplay
 from bustracker.config import load_config
+from bustracker.weather import setup_weather
 
 def launch_bt():
     parser = argparse.ArgumentParser(description='Display departures for Helsinki area buses/trams/trains/metro')
@@ -25,7 +26,10 @@ def main(scr, config_path, SLEEP_TIME=10):
     config_path = path.expanduser(config_path)
     if not path.exists(config_path):
         raise Exception("Config file not found: {}".format(config_path))
-    stops = load_config(config_path)
+    config = load_config(config_path)
+    stops = config['stops']
+
+    setup_weather(config)
 
     btd = BusTrackerDisplay(scr, stops)
 

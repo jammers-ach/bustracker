@@ -1,6 +1,8 @@
 import arrow
 import curses
 
+from bustracker.weather import get_temperature
+
 
 
 class BusTrackerDisplay:
@@ -43,8 +45,16 @@ class BusTrackerDisplay:
 
 
         self.last_updated = arrow.get()
-        self.scr.addstr("Last updated {}\n\n".format(self.last_updated.to("Europe/Helsinki").format("HH:mm")))
+        temperature = get_temperature()
+
+        # 17 = last update HH:mm, 5 = temp limit
+        width = self.x- 18 - 5
+        formatstring = "Last update {} {:>" + "{}".format(width) + "}\n\n"
+        self.scr.addstr(formatstring.format(self.last_updated.to("Europe/Helsinki").format("HH:mm"),
+                                            temperature))
         self.scr.refresh()
+
+
 
         for stop in self.stops:
 

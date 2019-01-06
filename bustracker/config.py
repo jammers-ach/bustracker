@@ -23,7 +23,9 @@ def load_config(filename):
             stop.get('stop_type', "Train"),
             stop.get('max_display', None),
         ))
-    return stops
+
+    config['stops'] = stops
+    return config
 
 
 
