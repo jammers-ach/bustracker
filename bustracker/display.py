@@ -1,6 +1,8 @@
 import arrow
 import curses
 
+from requests.exceptions import ConnectionError
+
 class BusTrackerDisplay:
     critical_minutes=10
     warning_minutes=15
@@ -70,9 +72,16 @@ class BusTrackerDisplay:
                 self.draw_stop(stop)
             except curses.error:
                 break
+            except ConnectionError:
+                # No connection
+                break
             self.scr.refresh()
 
-        self.update_stops()
+        try:
+            self.update_stops()
+        except ConnectionError:
+            self.scr.addstr("No connection")
+
 
     def draw_stop(self, stop):
         self.scr.addstr(stop.name, curses.A_BOLD)
