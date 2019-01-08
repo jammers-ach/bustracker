@@ -35,7 +35,7 @@ def main(scr, config_path, SLEEP_TIME=10):
 
     btd = BusTrackerDisplay(scr, stops, weather)
 
-    locale.setlocale(locale.LC_ALL, '')
+    locale.setlocale(locale.LC_ALL, 'en_GB.UTF-8')
     code = locale.getpreferredencoding()
 
     curses.start_color()
