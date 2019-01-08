@@ -21,11 +21,12 @@ class WeatherController:
     @property
     def display_string(self):
         if not self.last_response:
-            self.fetch()
-            return ""
-        else:
-            return "{}°C {}".format(self.last_response['main']['temp'],
-                                  self.last_response['weather'][0]['description'])
+            try:
+                self.fetch()
+            except Exception:
+                return "Couldn't connect to weather"
+        return "{}°C {}".format(self.last_response['main']['temp'],
+                                    self.last_response['weather'][0]['description'])
 
     def fetch(self):
         '''Gets the latest weather information'''
