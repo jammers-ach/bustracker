@@ -4,4 +4,7 @@ stops:
       time_limit: 60
       stop_type: "Train"
     - code: E1020
+weather:
+    api: openweathermap api
+    city: espoo
 

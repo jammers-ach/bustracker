@@ -9,7 +9,7 @@ from os import path
 from bustracker.departures import Stop
 from bustracker.display import BusTrackerDisplay
 from bustracker.config import load_config
-from bustracker.weather import setup_weather
+from bustracker.weather import WeatherController
 
 def launch_bt():
     parser = argparse.ArgumentParser(description='Display departures for Helsinki area buses/trams/trains/metro')
@@ -29,9 +29,11 @@ def main(scr, config_path, SLEEP_TIME=10):
     config = load_config(config_path)
     stops = config['stops']
 
-    setup_weather(config)
+    weather = None
+    if 'weather' in config:
+        weather = WeatherController(config['weather'])
 
-    btd = BusTrackerDisplay(scr, stops)
+    btd = BusTrackerDisplay(scr, stops, weather)
 
     locale.setlocale(locale.LC_ALL, '')
     code = locale.getpreferredencoding()

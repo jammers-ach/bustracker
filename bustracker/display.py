@@ -1,22 +1,19 @@
 import arrow
 import curses
 
-from bustracker.weather import get_temperature
-
-
-
 class BusTrackerDisplay:
     critical_minutes=10
     warning_minutes=15
     max_destination_gap=26
 
-    def __init__(self, scr, stops):
+    def __init__(self, scr, stops, weather):
         '''
         :param scr:  Ncurses screen
         '''
         self.scr = scr
         self.stops = stops
         self.debug = False
+        self.weather = weather
 
     @property
     def next_update_duration(self):
@@ -45,13 +42,24 @@ class BusTrackerDisplay:
 
 
         self.last_updated = arrow.get()
-        temperature = get_temperature()
 
-        # 17 = last update HH:mm, 5 = temp limit
-        width = self.x- 18 - 5
-        formatstring = "Last update {} {:>" + "{}".format(width) + "}\n\n"
-        self.scr.addstr(formatstring.format(self.last_updated.to("Europe/Helsinki").format("HH:mm"),
-                                            temperature))
+        if self.weather:
+            weather_string = self.weather.display_string
+        else:
+            weather_string = ""
+
+        # 17 = last update HH:mm
+        width = self.x
+        last_update_string = "Last update {}".format(self.last_updated.to("Europe/Helsinki").format("HH:mm"))
+
+        if len(last_update_string) + len(weather_string) > self.x:
+            self.scr.addstr("{}\n{}\n".format(last_update_string,weather_string))
+        else:
+            spaces = self.x - len(last_update_string) - len(weather_string)
+            self.scr.addstr("{}{}{}\n\n".format(last_update_string,
+                                                " " * spaces,
+                                                weather_string))
+
         self.scr.refresh()
 
 
