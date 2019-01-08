@@ -16,7 +16,10 @@ class WeatherController:
         self.city = config['city']
         self.interval = config.get('interval', DEFAULT_INTERVAL)
         self.last_response = None
-        self.fetch()
+        try:
+            self.fetch()
+        except Exception:
+            pass
 
     @property
     def display_string(self):
