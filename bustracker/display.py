@@ -40,7 +40,7 @@ class BusTrackerDisplay:
 
 
     def draw_all_stops(self):
-        self.scr.erase()
+        self.scr.clear()
         self.y, self.x = self.scr.getmaxyx()
 
 
