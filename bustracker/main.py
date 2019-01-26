@@ -43,6 +43,7 @@ def main(scr, config_path, SLEEP_TIME=10):
     scr.keypad(True)
     scr.nodelay(1)
     curses.noecho()
+    curses.curs_set(0)
 
     # color pair 1 = red text on white background
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)

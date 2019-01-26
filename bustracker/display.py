@@ -16,6 +16,7 @@ class BusTrackerDisplay:
         self.stops = stops
         self.debug = False
         self.weather = weather
+        self.first = True 
 
     @property
     def next_update_duration(self):
@@ -39,7 +40,7 @@ class BusTrackerDisplay:
 
 
     def draw_all_stops(self):
-        self.scr.clear()
+        self.scr.erase()
         self.y, self.x = self.scr.getmaxyx()
 
 
@@ -61,8 +62,8 @@ class BusTrackerDisplay:
             self.scr.addstr("{}{}{}\n\n".format(last_update_string,
                                                 " " * spaces,
                                                 weather_string))
-
-        self.scr.refresh()
+        if not self.first:
+            self.scr.refresh()
 
 
 
@@ -75,12 +76,17 @@ class BusTrackerDisplay:
             except ConnectionError:
                 # No connection
                 break
-            self.scr.refresh()
+            if not self.first:
+                self.scr.refresh()
 
         try:
             self.update_stops()
         except ConnectionError:
             self.scr.addstr("No connection")
+
+        if self.first:
+            self.scr.refresh()
+            self.first = False 
 
 
     def draw_stop(self, stop):
