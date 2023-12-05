@@ -77,7 +77,7 @@ def render_bus_timetable(row_per_stop = 3):
     now = datetime.datetime.now()
     for stop in times["data"]["stops"]:
         timetable = extract_timetable(stop, excluded_routes)
-        print(f"-------- {timetable[0][-1]:5}--------")
+        print(f"          {timetable[0][-1]:5}")
 
         for i, row in enumerate(timetable):
             if i > row_per_stop:
@@ -97,6 +97,8 @@ def render_bus_timetable(row_per_stop = 3):
             elif mins_left < (3*60):
                 print(data)
 
+        print()
+
 
 async def get_weather(location="Leppävaara"):
     async with python_weather.Client(unit=python_weather.METRIC) as client:
@@ -111,11 +113,11 @@ def draw_home_row():
     weather = asyncio.run(get_weather())
 
     time = now.strftime("%H:%M")
-    weather = f"{weather.temperature} {weather.description} {weather.kind.emoji}"
+    weather = f"{weather.temperature}°C {weather.description} {weather.kind.emoji}"
 
     text_len = len(weather)
 
-    print(f"{time}{weather:>60}")
+    print(f"Last updated: {time}{weather:>40}")
 
 
 def run():
