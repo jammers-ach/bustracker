@@ -10,7 +10,8 @@ from secrets import primary_key
 
 url ="https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql"
 stops = ["HSL:2111504", "HSL:2111552", "HSL:2112261", "HSL:2112401"]
-excluded_routes = ["520", "553", "550", "522", "522B"]
+excluded_routes = ["520", "553K","553", "550", "522", "522B"]
+
 
 class bcolors:
     RED = '\033[31m'
@@ -72,7 +73,7 @@ def extract_timetable(stop_data, excluded_routes=[]):
     return timetable
 
 
-def render_bus_timetable(row_per_stop = 3):
+def render_bus_timetable(row_per_stop = 2):
     times = do_bus_query(stops)
     now = datetime.datetime.now()
     for stop in times["data"]["stops"]:
@@ -87,8 +88,9 @@ def render_bus_timetable(row_per_stop = 3):
 
             time_left = dep_time - now
             mins_left = math.floor(time_left.total_seconds() / 60)
-            warning = f"in {mins_left} mins   " if mins_left < 20 else ""
-            data = f' {print_time:<9} {route_name:<5} {warning}'
+            warning = f"in {mins_left} mins   " if mins_left < 60 else ""
+            data = f'        {print_time:<9} {route_name:<5} {warning}'
+
 
             if mins_left < 3:
                 print(f"{bcolors.RED}{data}{bcolors.ENDC}")
@@ -97,7 +99,6 @@ def render_bus_timetable(row_per_stop = 3):
             elif mins_left < (3*60):
                 print(data)
 
-        print()
 
 
 async def get_weather(location="Leppävaara"):
@@ -110,10 +111,13 @@ async def get_weather(location="Leppävaara"):
 
 def draw_home_row():
     now = datetime.datetime.now()
-    weather = asyncio.run(get_weather())
-
     time = now.strftime("%H:%M")
-    weather = f"{weather.temperature}°C {weather.description} {weather.kind.emoji}"
+
+    try:
+        weather = asyncio.run(get_weather())
+        weather = f"{weather.temperature}°C {weather.description} {weather.kind.emoji}"
+    except Exception:
+        weather = ""
 
     text_len = len(weather)
 
